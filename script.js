@@ -1,8 +1,9 @@
-// Lightweight Three.js scene with binary STL fallback and drag+inertia
-// Creates a rotating 3D logo area; will try to fetch STL from common paths
-
+// script.js — Lightweight Three.js scene with binary STL fallback and drag+inertia
+// Copy-paste this entire file to replace your current script.js
 (function(){
   const THREE_CDN = 'https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js';
+  const MOBILE_BREAKPOINT = 800;      // px
+  const MOBILE_SCALE = 0.6;           // モバイル時の縮小率（0.5〜0.8 等で調整）
 
   function loadThreeIfMissing(cb){
     if(window.THREE) return cb();
@@ -19,8 +20,7 @@
     const positions = [];
     let offset = 84;
     for(let i=0;i<triangles;i++){
-      // skip normal (3 floats)
-      offset += 12;
+      offset += 12; // skip normal (3 floats)
       for(let v=0;v<3;v++){
         const x = view.getFloat32(offset, true); offset +=4;
         const y = view.getFloat32(offset, true); offset +=4;
@@ -66,11 +66,20 @@
 
     const candidates = ['./assets/logo.stl','./Assets/logo.stl','./43.stl','./Assets/43.stl','./assets/43.stl','./logo.stl'];
 
+    function applyMobileScale(){
+      const isMobile = window.innerWidth <= MOBILE_BREAKPOINT;
+      const scale = isMobile ? MOBILE_SCALE : 1.0;
+      logoGroup.scale.set(scale, scale, scale);
+      // re-frame so camera fits after scaling
+      frameObject(logoGroup);
+    }
+
     function addFallback(){
       const geo = new THREE.TorusKnotGeometry(20,6,128,24);
       const mesh = new THREE.Mesh(geo, material);
       logoGroup.add(mesh);
       frameObject(mesh);
+      applyMobileScale();
     }
 
     async function loadModel(){
@@ -81,6 +90,7 @@
           const mesh = new THREE.Mesh(geom, material);
           logoGroup.add(mesh);
           frameObject(mesh);
+          applyMobileScale();
           console.log('Loaded STL from', p);
           return;
         }catch(e){ /* try next */ }
@@ -99,14 +109,44 @@
 
     // Interaction: drag to rotate with inertia; wheel to zoom
     let dragging=false, lastX=0, lastY=0, velX=0, velY=0;
-    function onPointerDown(e){ dragging=true; lastX=e.clientX; lastY=e.clientY; }
-    function onPointerMove(e){ if(!dragging) return; const dx = e.clientX - lastX; const dy = e.clientY - lastY; lastX=e.clientX; lastY=e.clientY; logoGroup.rotation.y += dx * 0.01; logoGroup.rotation.x += dy * 0.01; velX = dx * 0.01; velY = dy * 0.01; }
-    function onPointerUp(){ dragging=false; }
-    function onWheel(e){ e.preventDefault(); camera.position.z += e.deltaY * 0.05; camera.position.z = Math.max(20, Math.min(2000, camera.position.z)); }
 
-    window.addEventListener('pointerdown', onPointerDown);
-    window.addEventListener('pointermove', onPointerMove);
-    window.addEventListener('pointerup', onPointerUp);
+    function onPointerDown(e){
+      // preventDefault so touch doesn't scroll
+      if(e.cancelable) e.preventDefault();
+      dragging=true;
+      lastX = e.clientX; lastY = e.clientY;
+      // disable page scroll while dragging
+      document.body.style.overflow = 'hidden';
+      // optional: capture pointer on the canvas
+      try { e.target.setPointerCapture && e.target.setPointerCapture(e.pointerId); } catch(_){}
+    }
+    function onPointerMove(e){
+      if(!dragging) return;
+      if(e.cancelable) e.preventDefault();
+      const dx = e.clientX - lastX;
+      const dy = e.clientY - lastY;
+      lastX = e.clientX; lastY = e.clientY;
+      logoGroup.rotation.y += dx * 0.01;
+      logoGroup.rotation.x += dy * 0.01;
+      velX = dx * 0.01; velY = dy * 0.01;
+    }
+    function onPointerUp(e){
+      dragging=false;
+      document.body.style.overflow = '';
+      try { e.target.releasePointerCapture && e.target.releasePointerCapture(e.pointerId); } catch(_){}
+    }
+    function onWheel(e){
+      if(e.cancelable) e.preventDefault();
+      camera.position.z += e.deltaY * 0.05;
+      camera.position.z = Math.max(20, Math.min(2000, camera.position.z));
+    }
+
+    // Attach handlers to renderer DOM element for better touch behavior
+    renderer.domElement.style.touchAction = 'none'; // also add in CSS: #logo3d { touch-action: none; }
+    renderer.domElement.addEventListener('pointerdown', onPointerDown, {passive:false});
+    renderer.domElement.addEventListener('pointermove', onPointerMove, {passive:false});
+    renderer.domElement.addEventListener('pointerup', onPointerUp, {passive:false});
+    renderer.domElement.addEventListener('pointercancel', onPointerUp, {passive:false});
     window.addEventListener('wheel', onWheel, {passive:false});
 
     function animate(){
@@ -125,6 +165,7 @@
       const w = window.innerWidth; const h = window.innerHeight;
       renderer.setSize(w,h);
       camera.aspect = w/h; camera.updateProjectionMatrix();
+      applyMobileScale();
     });
   }
 
