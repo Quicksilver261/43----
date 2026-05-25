@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>43</title>
+  <meta name="description" content="シンプルでレスポンシブなホームページテンプレート">
+  <link rel="stylesheet" href="styles.css">
+</head>
+  <body class="black-only">
+    <div id="logo3d" class="logo3d" aria-hidden="true"></div>
+    <header class="site-header">
+    <div class="container">
+      <a class="brand" href="#">MySite</a>
+      <button id="navToggle" class="nav-toggle" aria-label="メニュー">☰</button>
+      <nav class="site-nav" id="siteNav">
+        <a href="#features">特徴</a>
+        <a href="#about">紹介</a>
+        <a href="#contact">問い合わせ</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container">
+        <h1>ようこそ</h1>
+        <p>シンプルで使いやすいホームページテンプレートです。カスタマイズしてお使いください。</p>
+        <a class="cta" href="#contact">お問い合わせ</a>
+      </div>
+    </section>
+
+    <section id="features" class="features container">
+      <h2>特徴</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>レスポンシブ</h3>
+          <p>スマホ・タブレット・PCに対応しています。</p>
+        </div>
+        <div class="card">
+          <h3>高速</h3>
+          <p>軽量な設計で表示が速いです。</p>
+        </div>
+        <div class="card">
+          <h3>拡張性</h3>
+          <p>必要に応じて機能を追加できます。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" class="about container">
+      <h2>紹介</h2>
+      <p>このテンプレートは、静的サイトとしてそのまま使えるほか、任意のフレームワークやCMSに組み込めます。</p>
+    </section>
+
+    <section id="contact" class="contact container">
+      <h2>問い合わせ</h2>
+      <form id="contactForm">
+        <label>名前<input type="text" name="name" required></label>
+        <label>メール<input type="email" name="email" required></label>
+        <label>メッセージ<textarea name="message" rows="5" required></textarea></label>
+        <button type="submit">送信</button>
+        <p id="formMsg" class="form-msg" aria-live="polite"></p>
+      </form>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">© 2026 MySite</div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
